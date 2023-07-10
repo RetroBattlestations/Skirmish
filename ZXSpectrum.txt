@@ -1,0 +1,82 @@
+100 REM BASIC Month 8 - Skirmish
+110 REM http://RetroBattlestations.com
+120 REM written by FozzTexx - ZX Sprectum port by mattinx
+
+200 REM Prepare variables
+210 DIM N$(2,15):DIM N(2):DIM H(2)
+
+220 REM Count weapons
+225 LET MW = 0
+230 READ DMG:IF DMG > 0 THEN LET MW = MW + 1:READ ACC,CRIT,A$:GO TO 230
+240 REM Initialize weapons
+250 DIM P(2, MW):DIM D(MW):DIM A(MW):DIM C(MW):DIM W$(MW,15):DIM W(MW)
+260 RESTORE
+270 FOR I = 1 TO MW
+280 READ DMG,ACC,CRIT,A$:LET D(I) = DMG:LET A(I) = ACC:LET C(I) = CRIT:LET W$(I) = A$:LET W(I) = LEN A$
+290 NEXT I
+
+300 REM Initialize players
+310 LET TURN = 1
+320 FOR I = 1 TO 2
+325 REM Enhancement idea: make HP vary depending on player class (Wizard/Warrior/etc.)
+330 LET H(I) = 100
+340 FOR J = 1 TO MW
+345 REM Enhancement idea: give player a limited number of weapons
+350 LET P(I, J) = J
+360 NEXT J
+370 NEXT I
+
+400 REM Start game
+410 PRINT "Player 1, enter your name:"
+420 INPUT A$: LET N$(1) = A$: LET N(1) = LEN A$
+430 PRINT "Player 2, enter your name:"
+440 INPUT A$: LET N$(2) = A$: LET N(2) = LEN A$
+450 PRINT "Welcome, "; N$(1,1 TO N(1)); " and "; N$(2,1 TO N(2)); "!"
+460 PRINT "Let the battle begin!"
+
+500 REM Battle!
+510 LET FOE = 3 - TURN
+520 PRINT N$(TURN, 1 TO N(TURN)); ", it's your turn."
+530 PRINT "Choose your weapon:"
+540 FOR I = 1 TO MW
+550 IF P(TURN, I) > 0 THEN PRINT I;". "; W$(P(TURN, I), 1 TO W(P(TURN, I)))
+560 NEXT I
+570 INPUT WP
+580 IF WP < 1 OR WP > MW OR P(TURN, WP) = 0 THEN GO TO 530
+590 LET WP = P(TURN, WP)
+
+600 LET DMG = D(WP)
+610 PRINT "Rolling dice for "; N$(TURN, 1 TO N(TURN)); "... ";
+620 LET D1 = INT(RND * 100) + 1
+630 PAUSE 100:PRINT D1
+
+640 LET DMG = 0
+650 IF D1 > A(WP) THEN PRINT "Attack missed!": GO TO 800
+660 LET DMG = D(WP)
+670 LET D3 = INT(RND * 100) + 1
+680 IF D3 < C(WP) THEN PRINT "Critical hit!":LET DMG = DMG * 2
+
+700 PRINT "Rolling dice for "; N$(FOE, 1 TO N(FOE)); "... ";
+710 LET D2 = INT(RND * 6) + 1
+720 PAUSE 100:PRINT D2
+730 IF D2 = 1 THEN PRINT N$(FOE, 1 TO N(FOE)); " dodged the attack!": LET DMG = 0
+740 IF D2 = 6 THEN PRINT N$(FOE, 1 TO N(FOE)); " blocked the attack!": LET DMG = INT(DMG / 2)
+745 REM Enhancement idea: make opponent occasionally drop/lose weapon
+
+800 PRINT N$(FOE, 1 TO N(FOE)); " takes "; DMG; " damage!"
+810 LET H(FOE) = H(FOE) - DMG
+820 IF H(FOE) <= 0 THEN PRINT N$(FOE, 1 TO N(FOE)); " has been defeated!" : STOP
+
+830 LET TURN = FOE
+840 PRINT
+850 FOR I = 1 TO 2
+860 PRINT N$(I, 1 TO N(I)); " health: "; H(I)
+870 NEXT I
+880 PRINT
+890 GO TO 510
+
+1000 REM Weapon data
+1010 DATA 3,80,3,"Fist"
+1020 DATA 10,70,10,"Wooden Sword"
+1030 DATA 15,40,7,"Iron Sword"
+1040 DATA -1
